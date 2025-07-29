@@ -1,0 +1,326 @@
+/* style.qss */
+/* Flat light border + rounded corners for text editors */
+QPlainTextEdit {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  background: #fafafa;
+}
+
+/* Make the splitter handle a bit thicker and darker */
+QSplitter::handle {
+  background: #ddd;
+  width: 6px;
+}
+
+/* Style the toolbar buttons */
+QToolButton {
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+}
+QToolButton:hover {
+  background: #e0e0e0;
+}
+
+/* Profile combo box */
+QComboBox {
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* Filter box: larger padding, subtle inset shadow, rounded   */
+/* ─────────────────────────────────────────────────────────── */
+QLineEdit#filterBox {
+    border: 1px solid #A8D5A2;      /* mint green */
+    border-radius: 4px;             /* optional rounding */
+    min-height: 28px;
+	padding: 2px 6px;               /* ensure text doesn’t bump the border */
+}
+
+QLineEdit#filterBox:focus {
+	border: 1px solid #85BC8F;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* + Add Entry button: flat with accent background and hover  */
+/* ─────────────────────────────────────────────────────────── */
+QPushButton#addEntryButton {
+    background-color: #A8D5A2;  /* mint green */
+    color: #222;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+	selection-background-color: #A8D5A2;
+    min-width: 100px;
+}
+
+QPushButton#addEntryButton:hover {
+    background-color: #97c899;  /* slightly darker on hover */
+}
+
+QPushButton#addEntryButton:pressed {
+    background-color: #85bc8f;  /* and even darker when pressed */
+}
+
+/* ───────────────────────────────────────────────────────────── */
+/* Dictionary panel: light border + rounded corners + padding  */
+/* ───────────────────────────────────────────────────────────── */
+QWidget#dictionaryBox {
+    /* base panel look */
+    border: 1px solid #ccc;            /* thin light-grey outline */
+    background: #ffffff;               /* pure white so it stands out */
+    border-radius: 6px;                /* rounded corners */
+    padding: 8px;                      /* more breathing room */
+}
+
+/* ─────────────────────────────────────────── */
+/* Rounded border around the dictionary entries */
+/* ─────────────────────────────────────────── */
+QListWidget#dictList {
+    border: 1px solid #ccc;       /* light grey outline */
+    border-radius: 6px;          /* match your other roundness */
+    background: #ffffff;          /* solid white behind the items */
+    padding: 4px;                 /* small inset so items don’t butt the edge */
+}
+
+
+/* make the selected dictionary entry mint green */
+QListWidget#dictList::item:selected {
+    background-color: #A8D5A2;  /* your mint green */
+    color: #000000;             /* dark text for contrast */
+}
+
+/* optional: lighter mint on hover */
+QListWidget#dictList::item:hover {
+    background-color: #97c899;
+    color: #000000;
+}
+
+QListWidget#dictList::item:selected:!active {
+    background-color: #c8e6c9;  /* very pale mint */
+    color: #000000;
+}
+
+/* (Optional) if you want the scroll‐area content to clip inside the radius) */
+QListView#dictList {
+    outline: none;                /* remove focus outline if any */
+    background-clip: padding-box; /* ensure bg/border respect radius */
+}
+
+/* ───────────────────────────────────────────────────── */
+/* Dictionary Entry dialog: rounded white panel          */
+/* ───────────────────────────────────────────────────── */
+QDialog#dictionaryDialog {
+    background: #ffffff;        /* pure white canvas */
+    border: 1px solid #ccc;     /* light grey outline */
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	/* keep the nice rounded bottom corners */
+	border-bottom-left-radius: 12px;
+	border-bottom-right-radius: 12px;
+    padding: 16px;              /* space around the form */
+}
+
+/* Style the OK/Cancel buttons inline with your theme */
+QDialog#dictionaryDialog QPushButton {
+    background-color: #A8D5A2;  /* mint green */
+    color: #222;
+    border: none;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-weight: bold;
+    min-width: 80px;
+}
+
+/* make the code box pure white with a matching border */
+QDialog#dictionaryDialog QPlainTextEdit#dialogSnippetInput {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+/* match the code box styling on the name line */
+QDialog#dictionaryDialog QLineEdit#dialogNameInput {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px;
+}
+/* ─── Toolbar overall spacing & padding ─── */
+QToolBar#mainToolbar {
+    /* ensures every item sits at least 8px apart */
+    spacing: 8px;
+    /* padding around the whole toolbar */
+    padding: 4px;
+}
+
+/* ─── Profile dropdown styling ─── */
+/* ── Popup list items ── */
+QComboBox#profileCombo QAbstractItemView {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    /* ensure text doesn’t get cut off */
+    padding: 2px;
+}
+
+/* default (unselected) */
+QComboBox#profileCombo QAbstractItemView::item {
+    color: #333333;
+    background: transparent;
+    padding: 4px 8px;
+}
+
+/* hovered */
+QComboBox#profileCombo QAbstractItemView::item:hover {
+    background: #f0f0f0;
+	color: black;
+}
+
+/* selected */
+QComboBox#profileCombo QAbstractItemView::item:selected {
+    background: #4a90e2;    /* your accent blue */
+    color: black;
+}
+/* ── Remove blank space in the drop-down and insert our arrows ── */
+QComboBox#profileCombo::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;            /* reserve room */
+    border: none;           /* no extra border */
+    background: transparent;
+}
+
+QComboBox#profileCombo::down-arrow {
+    image: url(':/images/chevron-down.svg');
+    width: 12px;
+    height: 12px;
+}
+
+QComboBox#profileCombo::down-arrow:on {   /* when popup is open */
+    image: url(':/images/chevron-up.svg');
+}
+
+
+
+/* drop-down arrow area */
+QComboBox#profileCombo::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: 1px solid #bbb;
+}
+
+
+/* style the dropdown list itself */
+QComboBox#profileCombo QAbstractItemView {
+  background: #ffffff;            /* solid white behind the list */
+  border: 2px solid #28A745;      /* same green border */
+  border-radius: 6px;             /* rounded corners */
+  outline: none;                  /* no focus outline */
+  padding: 2px;                   /* a bit of inner space */
+}
+
+/* style each item so selection also looks nice */
+QComboBox#profileCombo QAbstractItemView::item {
+  padding: 4px 6px;
+}
+
+/* hover/selection coloring */
+QComboBox#profileCombo QAbstractItemView::item:selected {
+  background: #E8F5E9;            /* light green highlight */
+}
+
+
+QDialog#dictionaryDialog QPushButton:hover {
+    background-color: #97c899;
+}
+/* (Optional) give a pressed state here too: */
+QDialog#dictionaryDialog QPushButton:pressed {
+    background-color: #85bc8f;  /* deepest mint */
+}
+
+/* ─────────────────────────────────────────────── */
+/* Profile dropdown only: white list + blue select  */
+/* ─────────────────────────────────────────────── */
+QListView#profilePopupList {
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    selection-background-color: #4a90e2;
+    selection-color: #ffffff;
+}
+
+QListView#profilePopupList::item {
+    color: #333;
+    padding: 4px 8px;
+}
+
+QListView#profilePopupList::item:hover {
+    background: #f0f0f0;
+}
+
+
+/* the green box around both label+combo */
+QFrame#profileFrame {
+  border: 1px solid #CCCCCC;    /* same thin grey */
+  border-radius: 4px;           /* match your list’s rounding */
+  padding: 0px;                 /* keep your existing inset */
+  background: #ffffff;
+}
+
+QLineEdit#filterBox {
+  border: 1px solid #CCCCCC;    /* same thin grey */
+  border-radius: 4px;           /* match your list’s rounding */
+  padding: 4px 6px;             /* adjust for your desired height */
+  background: #ffffff;
+}
+
+
+/* keep the inner label/combo styling if you like */
+QLabel#profileLabel {
+  padding: 0 4px;
+}
+
+QComboBox#profileCombo {
+  padding: 2px 4px;
+  border: none;           /* remove its own border so it’s flush inside the frame */
+  background: transparent;
+}
+
+/* style the popup list for Profile combo */
+QListView#profileComboView {
+  background: #ffffff;            /* white background */
+  border: 2px solid #28A745;      /* same green border */
+  border-radius: 6px;             /* rounded corners */
+  outline: none;                  /* no focus outline */
+  padding: 2px;                   /* inner spacing */
+}
+
+/* items inside it */
+QListView#profileComboView::item {
+  padding: 4px 6px;
+}
+
+/* hover/selection */
+QListView#profileComboView::item:hover,
+QListView#profileComboView::item:selected {
+  background: #E8F5E9;   /* light green */
+  color: black;
+}
+QComboBox#profileCombo QAbstractItemView#profileComboView {
+  background: #ffffff;
+  border: 2px solid #28A745;
+  border-radius: 0px;    /* ← now sharp corners */
+  outline: none;
+  padding: 4px;
+}
+
+
