@@ -1,5 +1,3 @@
-# GCodeMaker
-
 # GCodeMaker v1.0
 
 **shopfloor.works** – A standalone, offline-first G‑Code editor and annotator for CNC programmers.
@@ -26,7 +24,7 @@ GCodeMaker is a cross‑platform desktop application built with Python and PyQt5
 ## Requirements
 
 * Python **3.7+**
-* [PyQt5](https://pypi.org/project/PyQt5/)
+* PyQt5
 
 ## Installation
 
@@ -67,22 +65,6 @@ GCodeMaker is a cross‑platform desktop application built with Python and PyQt5
 * **QSS Stylesheet** (`style.qss`) controls widget colors, borders, and typography. Modify it to customize the look and feel.
 * **Icons**: The window icon is `green_g_icon.png` (replace to rebrand).
 
-## Development
-
-1. **Install dev dependencies**
-
-   ```bash
-   pip install pytest flake8
-   ```
-2. **Lint & Test**
-
-   ```bash
-   flake8 .
-   pytest
-   ```
-3. **Add Profile**
-
-   * Use the "Add Profile" action in the toolbar to duplicate settings from the current profile.
 
 ## Contributing
 
