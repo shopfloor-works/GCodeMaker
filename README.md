@@ -1,4 +1,4 @@
-# GCodeMaker v1.0 by shopfloor.works
+# GCodeMaker v1.1 by shopfloor.works
 
 A standalone, offline-first G‑Code editor and annotator for CNC programmers.
 
@@ -84,4 +84,4 @@ This project is licensed under the MIT License. See \[LICENSE]\(MIT\ License.txt
 
 ---
 
-*Built with ♥ by Micah Foster.*
+*Built by Micah.*
