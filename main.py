@@ -3,21 +3,33 @@ import os
 import json
 import shutil
 import re
+import resources_rc
+
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QPlainTextEdit, QTextEdit,
     QWidget, QVBoxLayout, QSplitter, QToolBar, QAction, QComboBox,
     QLineEdit, QListWidget, QPushButton, QDialog, QFormLayout,
     QDialogButtonBox, QMessageBox, QLabel, QStyle, QMenu, QSizePolicy,
-    QHBoxLayout, QFrame, QListView, QScrollBar
+    QHBoxLayout, QFrame, QListView, QScrollBar, QToolButton
 )
 from PyQt5.QtGui import (
     QFont, QSyntaxHighlighter, QTextCharFormat, QColor, QPainter,
-    QTextCursor, QTextFormat, QIcon, QKeySequence
+    QTextCursor, QTextFormat, QIcon, QKeySequence, QDesktopServices
 )
 from PyQt5.QtCore import (
-    Qt, QSize, QRegExp
+    Qt, QSize, QRegExp, QIODevice, QFile, QTextStream, QUrl
 )
+
+
+if getattr(sys, 'frozen', False):
+    # PyInstaller onedir: resources live next to the exe
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    # running “python main.py”
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+PROFILES_DIR = os.path.join(BASE_DIR, 'profiles')
 
 
 class Palette:
@@ -46,7 +58,7 @@ class GCodeHighlighter(QSyntaxHighlighter):
             fmt = QTextCharFormat()
             fmt.setForeground(color)
             if bold:
-                fmt.setFontWeight(QFont.Bold)
+                fmt.setFontWeight(QFont.Normal)
             return fmt
             
         # G-commands
@@ -296,16 +308,16 @@ class DictionaryWidget(QWidget):
     def load_entries(self, profile):
         self.profile = profile
         self.entries = {}
-        path = f'profiles/{profile}-dictionary.json'
+        path = os.path.join(PROFILES_DIR, f"{profile}-dictionary.json")
         if os.path.exists(path):
             with open(path, 'r') as f:
                 self.entries = json.load(f)
         self.refresh_list()
 
     def save_entries(self):
-        if not os.path.exists('profiles'):
-            os.makedirs('profiles')
-        path = f'profiles/{self.profile}-dictionary.json'
+        if not os.path.exists(PROFILES_DIR):
+            os.makedirs(PROFILES_DIR)
+        path = os.path.join(PROFILES_DIR, f"{self.profile}-dictionary.json")
         with open(path, 'w') as f:
             json.dump(self.entries, f, indent=2)
 
@@ -466,8 +478,8 @@ class DictionaryDialog(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('GCodeMaker v1.0 | shopfloor.works')
-        self.setWindowIcon(QIcon('green_g_icon.png'))
+        self.setWindowTitle('GCodeMaker v1.1 | shopfloor.works')
+        self.setWindowIcon(QIcon(':/images/green_g_icon.png'))
         self.resize(1200, 805)
         self.current_file = None
         self.annotation_dict = {}
@@ -475,6 +487,14 @@ class MainWindow(QMainWindow):
         self.current_profile = None
         self._syncing = False
         self.init_ui()
+
+    def open_profiles_folder(self):
+        # ensure the directory exists
+        if not os.path.exists(PROFILES_DIR):
+            os.makedirs(PROFILES_DIR)
+        # open it in the OS file browser
+        QDesktopServices.openUrl(QUrl.fromLocalFile(PROFILES_DIR))
+
 
     def init_ui(self):
         self.setup_toolbar()
@@ -517,6 +537,17 @@ class MainWindow(QMainWindow):
         toolbar.addAction(save_as_act)
 
         toolbar.addSeparator()
+        
+        # ── Profiles text button ─────────────────────────────────────────────
+        profiles_btn = QToolButton(self)
+        profiles_btn.setText("Profiles")
+        # only show text (no icon placeholder)
+        profiles_btn.setToolButtonStyle(Qt.ToolButtonTextOnly)
+        # make it flat/“auto-raise” so it looks like the other toolbar buttons
+        profiles_btn.setAutoRaise(True)
+        profiles_btn.setToolTip("Open profiles directory")
+        profiles_btn.clicked.connect(self.open_profiles_folder)
+        toolbar.addWidget(profiles_btn)
 
     def rename_profile(self):
         # 1. Grab the old name
@@ -545,7 +576,7 @@ class MainWindow(QMainWindow):
             return
 
         # 4. Rename on disk
-        prof_dir = 'profiles'
+        prof_dir = PROFILES_DIR
         old_ann = os.path.join(prof_dir, f"{old}-annotations.json")
         old_dict = os.path.join(prof_dir, f"{old}-dictionary.json")
         new_ann = os.path.join(prof_dir, f"{new_name}-annotations.json")
@@ -590,7 +621,7 @@ class MainWindow(QMainWindow):
             return
 
         # 2. Remove files
-        prof_dir = 'profiles'
+        prof_dir = PROFILES_DIR
         for suffix in ('-annotations.json', '-dictionary.json'):
             path = os.path.join(prof_dir, prof + suffix)
             try:
@@ -681,10 +712,10 @@ class MainWindow(QMainWindow):
 
     def load_profiles(self):
         # ensure the profiles/ folder exists
-        os.makedirs('profiles', exist_ok=True)
+        os.makedirs(PROFILES_DIR, exist_ok=True)
 
         # path to the master list
-        json_path = os.path.join('profiles', 'profiles.json')
+        json_path = os.path.join(PROFILES_DIR, 'profiles.json')
 
         if os.path.exists(json_path):
             # load existing profiles
@@ -728,7 +759,7 @@ class MainWindow(QMainWindow):
         self.save_profiles()               # writes profiles/profiles.json
 
         # 4. Create the two JSON files under profiles/
-        profiles_dir = 'profiles'
+        profiles_dir = PROFILES_DIR
         # 4a. Annotations – copy default if it exists, else start empty
         src_ann = os.path.join(profiles_dir, f"{self.current_profile}-annotations.json")
         dst_ann = os.path.join(profiles_dir, f"{name}-annotations.json")
@@ -751,36 +782,50 @@ class MainWindow(QMainWindow):
         self.set_profile(name)
 
     def save_profiles(self):
-        with open('profiles/profiles.json', 'w') as f:
+        profiles_json = os.path.join(PROFILES_DIR, 'profiles.json')
+        with open(profiles_json, 'w') as f:
             json.dump(self.profiles, f, indent=2)
 
     def set_profile(self, profile):
         self.current_profile = profile
         # Load annotations
-        ann_path = f'profiles/{profile}-annotations.json'
+        ann_path = os.path.join(PROFILES_DIR, f"{profile}-annotations.json")
         if os.path.exists(ann_path):
             with open(ann_path, 'r') as f:
                 self.annotation_dict = json.load(f)
         else:
             self.annotation_dict = {}
-        # so you can go from “Linear interpolation movement” → “G1”
-        self.reverse_annotation_map = {
-        desc: cmd
-        for cmd, desc in self.annotation_dict.items()
-        }
+
+        # after loading self.annotation_dict…
+        self.reverse_annotation_map = {}
+        for cmd, entry in self.annotation_dict.items():
+            # _unwrap(entry) → (desc_text, sub_map)
+            desc_text, _ = self._unwrap(entry)
+            if desc_text:
+                self.reverse_annotation_map[desc_text] = cmd
+
 
         # Load dictionary
         self.dictionary.load_entries(profile)
         self.on_editor_text_changed()
 
+    def _unwrap(self, entry):
+        """
+        entry may be either a str or a dict {desc: str, sub: {...}}.
+        Returns (desc: str, sub_map: dict or None).
+        """
+        if isinstance(entry, dict):
+            return entry.get("desc"), entry.get("sub", {})
+        else:
+            return entry, None
+
+
     def describe_line(self, line):
-        # 1) Handle blank lines
+        # 1) Blank or pure-comment lines
         text = line.rstrip('\n')
         stripped = text.strip()
         if not stripped:
             return ''
-
-        # 2) Full-line comments
         if stripped.startswith('(') and stripped.endswith(')'):
             # e.g. "( this is a comment )"
             return f"Comment - {stripped[1:-1]}"
@@ -788,60 +833,75 @@ class MainWindow(QMainWindow):
             # e.g. "; this is a comment"
             return f"Comment - {stripped[1:].strip()}"
 
-        # 3) Mixed lines: split off semicolon comment, remove any (...) comments
+        # 2) Strip mixed inline comments
         comment = None
         code_part = text
         if ';' in code_part:
             code_part, comment = code_part.split(';', 1)
         code_part = re.sub(r'\(.*?\)', '', code_part)
         if not code_part.strip():
-            # line was code-free after stripping comments
             return f"Comment - {comment.strip()}" if comment else ''
 
-        # 4) Tokenize & strict-validate each token
-        tokens = code_part.strip().split()
+        # 3) Tokenize and set up
+        tokens    = code_part.strip().split()
         annotations = []
-        num_re = re.compile(r'^([A-Za-z]+)([-+]?(?:[0-9]*\.[0-9]+|[0-9]+))$')
+        num_re    = re.compile(r'^([A-Za-z]+)([-+]?(?:[0-9]*\.[0-9]+|[0-9]+))$')
+        comma_re  = re.compile(r'^,([A-Za-z]+)([-+]?(?:\d+\.?\d*|\.\d+))$')
+        sub_map   = None
 
-        for tok in tokens:
-            full  = tok.upper()
+        # 4) Process each token in turn
+        for i, tok in enumerate(tokens):
+            raw   = tok.strip()
+            clean = raw.rstrip('.').upper()
+
+            entry = None
             desc  = None
             value = None
 
-            # 1) Multi-character full-token match (e.g. "G1", "M06")
-            if full in self.annotation_dict and len(full) > 1:
-                desc = self.annotation_dict[full]
-
-            else:
-                # 2) Letter+number form?
-                m = num_re.fullmatch(tok)
-                if m:
-                    cmd, value = m.group(1).upper(), m.group(2)
-                    desc = self.annotation_dict.get(cmd)
-                    if desc is None:
-                        return "Unrecognized command"
-
-                # 3) Single-letter special cases
-                elif full == '%' and '%' in self.annotation_dict:
-                    desc = self.annotation_dict['%']
-
-                # 4) Anything else is invalid
+            # 4a) comma-prefixed codes (,R1, ,C1, etc.)
+            m_c = comma_re.fullmatch(clean)
+            if m_c:
+                letter, value = m_c.group(1).upper(), m_c.group(2)
+                cmd = f",{letter}"
+                if i > 0 and sub_map and cmd in sub_map:
+                    desc = sub_map[cmd]
                 else:
-                    return "Unrecognized command"
+                    entry = self.annotation_dict.get(cmd)
 
-            # Safety check
-            if desc is None:
+            # 4b) full-token lookup (G80, G00, M06, T1…)
+            elif clean in self.annotation_dict:
+                cmd, value = clean, None
+                entry = self.annotation_dict[cmd]
+
+            # 4c) letter+number fallback (X5.0, Z-1.2, F100…)
+            else:
+                m = num_re.fullmatch(clean)
+                if not m:
+                    return "Unrecognized command"
+                cmd, value = m.group(1).upper(), m.group(2)
+                if i > 0 and sub_map and cmd in sub_map:
+                    desc = sub_map[cmd]
+                else:
+                    entry = self.annotation_dict.get(cmd)
+
+            # 5) If we got a dict entry, unwrap it (desc + new sub_map)
+            if entry is not None:
+                desc, new_sub = self._unwrap(entry)
+                sub_map = new_sub
+
+            # 6) If we still don’t have a description, it’s unknown
+            if not desc:
                 return "Unrecognized command"
 
-            # 5) Build the annotation text
+            # 7) Build the annotation text
             if value is not None:
                 annotations.append(f"{desc} = {value}")
             else:
                 annotations.append(desc)
 
-        # 6) Final join / fallback
-        result = ', '.join(annotations)
-        return result if result else "Unrecognized command"
+        # 8) Join all pieces
+        result = ", ".join(annotations)
+        return result or "Unrecognized command"
 
     def on_editor_text_changed(self):
         # Mirror every editor line (including blank ones) into the annotation pane
@@ -880,7 +940,7 @@ class MainWindow(QMainWindow):
             elif stripped == "Unrecognized command":
                 fmt = QTextCharFormat()
                 fmt.setForeground(Palette.ERROR)
-                fmt.setFontWeight(QFont.Bold)
+                fmt.setFontWeight(QFont.Normal)
                 cursor.insertText(line, fmt)
 
             # 4) one or more annotation parts separated by ", "
@@ -923,7 +983,7 @@ class MainWindow(QMainWindow):
                     fmt = QTextCharFormat()
                     fmt.setForeground(color)
                     if is_bold:
-                        fmt.setFontWeight(QFont.Bold)
+                        fmt.setFontWeight(QFont.Normal)
                     cursor.insertText(part, fmt)
 
                     # re-insert the comma+space
@@ -1021,9 +1081,15 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    with open('style.qss', 'r', encoding='utf-8') as f:
-        app.setStyleSheet(f.read())
-    app.setWindowIcon(QIcon('green_g_icon.png'))
+    # load the QSS from the compiled resource (:/qss/style.qss)
+    qfile = QFile(':/qss/style.qss')
+    if qfile.open(QIODevice.ReadOnly | QIODevice.Text):
+       stream = QTextStream(qfile)
+       app.setStyleSheet(stream.readAll())
+       qfile.close()
+    else:
+       print("WARNING: could not load :/qss/style.qss")
+    app.setWindowIcon(QIcon(':/images/green_g_icon.png'))
     app.setFont(QFont('Segoe UI', 10))
     window = MainWindow()
     window.show()
