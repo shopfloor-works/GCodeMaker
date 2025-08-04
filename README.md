@@ -14,7 +14,7 @@ GCodeMaker is a cross‑platform desktop application built with Python and PyQt5
 
 ## Features
 
-* **Rich G‑Code Highlighter**: Colors G, M, T, F, S, X, Y, Z, I/J/K, R/Q/N, C (chamfer), P (dwell) tokens with customizable QSS styling.
+* **Rich G‑Code Highlighter**: Colors for G, M, T, F, S, X/Y/Z, I/J/K, R/Q/N, C (chamfer), P (dwell) tokens.
 * **Annotation Engine**: Parses each token against a profile‑specific annotations JSON to provide real‑time explanations.
 * **Dictionary Widget**: Search, add, edit, and double‑click to insert predefined code snippets (e.g., tool changes, canned cycles).
 * **Profile Management**: Create, rename, or delete machine profiles, each with independent annotation and dictionary sets.
@@ -34,18 +34,13 @@ GCodeMaker is a cross‑platform desktop application built with Python and PyQt5
    git clone https://github.com/yourusername/GCodeMaker.git
    cd GCodeMaker
    ```
-2. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Run the application**
+2. **Run the application**
 
    ```bash
    python main.py
    ```
 
-> The app will automatically create a `profiles/` folder on first run with a default profile.
+> The app will automatically create a `profiles/` folder on first run with a default profile, but it's generally a good idea to make sure you have the JSON files in there otherwise the annotation pane will say "Unrecognized Command" for everything and the dictionary widget will be blank. 
 
 ## Usage
 
@@ -62,7 +57,7 @@ GCodeMaker is a cross‑platform desktop application built with Python and PyQt5
 ## Configuration & Styling
 
 * **Annotations & Dictionary** files live in the `profiles/` directory.
-* **QSS Stylesheet** (`style.qss`) controls widget colors, borders, and typography. Modify it to customize the look and feel.
+* **QSS Stylesheet** (`style.qss`) controls widget colors, borders, and typography.
 * **Icons**: The window icon is `green_g_icon.png` (replace to rebrand).
 
 
@@ -80,7 +75,7 @@ Please follow the existing code style and include tests where applicable.
 
 ## License
 
-This project is licensed under the MIT License. See \[LICENSE]\(MIT\ License.txt) for details.
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ---
 
