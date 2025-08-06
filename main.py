@@ -478,7 +478,7 @@ class DictionaryDialog(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('GCodeMaker v1.1 | shopfloor.works')
+        self.setWindowTitle('GCodeMaker v1.2 | shopfloor.works')
         self.setWindowIcon(QIcon(':/images/green_g_icon.png'))
         self.resize(1200, 805)
         self.current_file = None
@@ -832,27 +832,81 @@ class MainWindow(QMainWindow):
         if stripped.startswith(';'):
             # e.g. "; this is a comment"
             return f"Comment - {stripped[1:].strip()}"
+        # —– Program start/stop marker
+        if stripped == '%':
+           # Look up in the annotations dict, unwrap if needed
+           entry = self.annotation_dict.get('%')
+           if entry:
+               desc, _ = self._unwrap(entry)
+               return desc
+        if stripped == '/':
+            return "Block skip"
 
-        # 2) Strip mixed inline comments
+        # 2) Extract any inline comments (semicolon **and** parentheses)
         comment = None
         code_part = text
-        if ';' in code_part:
-            code_part, comment = code_part.split(';', 1)
-        code_part = re.sub(r'\(.*?\)', '', code_part)
-        if not code_part.strip():
-            return f"Comment - {comment.strip()}" if comment else ''
 
-        # 3) Tokenize and set up
-        tokens    = code_part.strip().split()
+        # –– Semicolon comments
+        if ';' in code_part:
+            code_part, sem_comment = code_part.split(';', 1)
+            comment = sem_comment.strip()
+
+        # –– Parenthesis comments
+        paren_comments = re.findall(r'\((.*?)\)', code_part)
+        if paren_comments:
+            # join multiple (...) if present
+            paren_text = ' '.join(paren_comments).strip()
+            if comment:
+                comment = f"{comment} {paren_text}"
+            else:
+                comment = paren_text
+
+        # –– Now strip them out of the code
+        code_part = re.sub(r'\(.*?\)', '', code_part)
+
+        # —– Extract trailing *nn checksum
+        checksum_val = None
+        m_chk = re.search(r'\*(\d+)$', code_part)
+        if m_chk:
+            checksum_val = m_chk.group(1)
+            # remove it so tokenization won’t choke
+            code_part = code_part[:m_chk.start()]
+
+        # Pure-comment lines (no tokens left)?
+        if not code_part.strip():
+            return f"Comment - {comment}" if comment else ''
+
+        # 3) Tokenize: grab every letter+number or ,letter+number pair,
+        #    even if they're stuck together with no spaces
+        raw_code = code_part.strip().upper()
+        tokens = re.findall(
+            r'(?:,[A-Za-z]+[-+]?(?:\d*\.\d+|\d+))'   # comma-prefixed
+          r'|(?:[A-Za-z]+[-+]?(?:\d*\.\d+|\d+))'    # X5.0, G43, etc.
+          r'|(?:\#[0-9]+)',                         # macro-vars like #100
+            raw_code
+        )
         annotations = []
         num_re    = re.compile(r'^([A-Za-z]+)([-+]?(?:[0-9]*\.[0-9]+|[0-9]+))$')
         comma_re  = re.compile(r'^,([A-Za-z]+)([-+]?(?:\d+\.?\d*|\.\d+))$')
         sub_map   = None
 
+        # —– ensure we consumed every character as a valid token —
+        #    if not, bail out with Unrecognized command
+        raw_nospace = re.sub(r'\s+', '', raw_code)
+        if ''.join(tokens) != raw_nospace:
+            return "Unrecognized command"
+
         # 4) Process each token in turn
         for i, tok in enumerate(tokens):
             raw   = tok.strip()
             clean = raw.rstrip('.').upper()
+
+            # —– Macro-variable: “#100”
+            if clean.startswith('#'):
+                # value is everything after the “#”
+                var_num = clean[1:]
+                annotations.append(f"Macro variable {clean} = {var_num}")
+                continue
 
             entry = None
             desc  = None
@@ -899,7 +953,15 @@ class MainWindow(QMainWindow):
             else:
                 annotations.append(desc)
 
-        # 8) Join all pieces
+        # —– If we found a checksum, annotate it too
+        if checksum_val is not None:
+            annotations.append(f"Checksum = {checksum_val}")
+
+        # 8) If we extracted an inline comment, tack it on
+        if comment:
+            annotations.append(f"Comment - {comment}")
+
+        # 9) Join all pieces (commands first, then comment)
         result = ", ".join(annotations)
         return result or "Unrecognized command"
 
