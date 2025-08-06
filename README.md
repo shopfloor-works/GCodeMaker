@@ -1,4 +1,4 @@
-# GCodeMaker v1.1 by shopfloor.works
+# GCodeMaker v1.2 by shopfloor.works
 
 A standalone, offline-first G‑Code editor and annotator for CNC programmers.
 
