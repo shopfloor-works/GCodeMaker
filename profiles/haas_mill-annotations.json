@@ -642,25 +642,50 @@
 	  }
   },
   "M00": "Stop Program",
+  "M0": "Stop Program",
   "M01": "Optional Program Stop",
+  "M1": "Optional Program Stop",
   "M02": "Program End",
+  "M2": "Program End",
   "M03": "Spindle Forward Command",
+  "M3": "Spindle Forward Command",
   "M04": "Spindle Reverse Command",
+  "M4": "Spindle Reverse Command",
   "M05": "Spindle Stop Command",
+  "M5": "Spindle Stop Command",
   "M06": {
 	  "desc": "Tool Change",
 	  "sub": {
 		  "T": "Tool Number"
 	  }
   },
+  "M6": {
+	  "desc": "Tool Change",
+	  "sub": {
+		  "T": "Tool Number"
+	  }
+  },
   "M07": "Shower Coolant On",
+  "M7": "Shower Coolant On",
   "M08": {
 	  "desc": "Coolant On",
 	  "sub": {
 		  "T": "M08 Pn"
 	  }
   },
+  "M8": {
+	  "desc": "Coolant On",
+	  "sub": {
+		  "T": "M08 Pn"
+	  }
+  },
   "M09": {
+	  "desc": "Coolant Off",
+	  "sub": {
+		  "T": "M09 Pn"
+	  }
+  },
+  "M9": {
 	  "desc": "Coolant Off",
 	  "sub": {
 		  "T": "M09 Pn"
